@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import warnings
-
+from .sysu import SYSU
 from .market1501 import Market1501
 from .msmt17 import MSMT17
 from .personx import PersonX
@@ -10,6 +10,7 @@ from .vehiclex import VehicleX
 
 
 __factory = {
+    'sysu': SYSU,
     'market1501': Market1501,
     'msmt17': MSMT17,
     'personx': PersonX,
