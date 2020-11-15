@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0 python3 examples/test.py -d sysu --resume logs/sysu_sample2_0.7/model_best.pth.tar
