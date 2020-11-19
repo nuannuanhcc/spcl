@@ -152,16 +152,23 @@ def main_worker(args):
         # Calculate distance
         print('==> Create pseudo labels for unlabeled data with self-paced policy')
         features = memory.features.clone()
-        rerank_dist = compute_jaccard_distance(features, k1=args.k1, k2=args.k2)
+        # rerank_dist = compute_jaccard_distance(features, k1=args.k1, k2=args.k2)
+        sim = torch.mm(features, features.t())
+        # sim = torch.from_numpy(-rerank_dist)
         del features
+        neb = 2
+        score, idx = torch.topk(sim, neb, dim=-1)
+        label = torch.arange(idx.shape[0])
+        for i in idx:
+            min_idx = torch.min(i)
+            min_val = label[min_idx].clone()
+            # min_val = torch.min(label[i])
+            for j in range(neb):
+                label[i[j]] = min_val
 
-        if (epoch==0):
-            # DBSCAN cluster
-            eps = args.eps
-            cluster = DBSCAN(eps=eps, min_samples=4, metric='precomputed', n_jobs=-1)
-
-        # select & cluster images as training set of this epochs
-        pseudo_labels = cluster.fit_predict(rerank_dist)
+        label_set = set(label.tolist())
+        map_label = {label: new for new, label in enumerate(label_set)}
+        pseudo_labels = np.array([map_label[i.item()] for i in label])
         num_ids = len(set(pseudo_labels)) - (1 if -1 in pseudo_labels else 0)
 
         # generate new dataset and calculate cluster centers
