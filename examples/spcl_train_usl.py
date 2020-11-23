@@ -175,15 +175,24 @@ def main_worker(args):
         def generate_pseudo_labels(cluster_id, num):
             labels = []
             outliers = 0
-            for i, ((fname, _, cid), id) in enumerate(zip(sorted(dataset.train), cluster_id)):
+            pids = []
+            for i, ((fname, pid, cid), id) in enumerate(zip(sorted(dataset.train), cluster_id)):
                 if id!=-1:
                     labels.append(id)
+                    pids.append(pid)
                 else:
                     labels.append(num+outliers)
+                    labels.append(pid)
                     outliers += 1
-            return torch.Tensor(labels).long()
+            return torch.Tensor(labels).long(), torch.Tensor(pids).long()
 
-        pseudo_labels = generate_pseudo_labels(pseudo_labels, num_ids)
+        pseudo_labels, pids = generate_pseudo_labels(pseudo_labels, num_ids)
+        true_labels = pids
+        pred_labels = pseudo_labels
+        from sklearn import metrics
+        print('cluster_metrics:', metrics.adjusted_rand_score(true_labels, pred_labels))
+        # print(metrics.adjusted_mutual_info_score(true_labels, pred_labels))
+        # print(metrics.homogeneity_score(true_labels, pred_labels))
 
         pseudo_labeled_dataset = []
 

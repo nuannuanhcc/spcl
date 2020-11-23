@@ -67,8 +67,17 @@ class HybridMemory(nn.Module):
         sim.index_add_(0, labels, inputs.t().contiguous())
         nums = torch.zeros(labels.max()+1, 1).float().cuda()
         nums.index_add_(0, labels, torch.ones(self.num_samples,1).float().cuda())
-        mask = (nums>0).float()
-        sim /= (mask*nums+(1-mask)).clone().expand_as(sim)
-        mask = mask.expand_as(sim)
-        masked_sim = masked_softmax(sim.t().contiguous(), mask.t().contiguous())
-        return F.nll_loss(torch.log(masked_sim+1e-6), targets)
+        #
+        sim = sim / nums.expand_as(sim)
+        # exps = torch.exp(sim1.t().contiguous())
+        # logits = exps / (exps.sum(1, keepdim=True) + 1e-6)
+        # loss1 = F.nll_loss(torch.log(logits + 1e-6), targets)
+        loss = F.cross_entropy(sim.t(), targets)
+        #
+        # mask = (nums>0).float()
+        # sim /= (mask*nums+(1-mask)).clone().expand_as(sim)
+        # mask = mask.expand_as(sim)
+        # masked_sim = masked_softmax(sim.t().contiguous(), mask.t().contiguous())
+        # loss =  F.nll_loss(torch.log(masked_sim+1e-6), targets)
+
+        return loss
