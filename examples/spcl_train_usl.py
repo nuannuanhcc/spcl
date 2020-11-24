@@ -182,7 +182,7 @@ def main_worker(args):
                     pids.append(pid)
                 else:
                     labels.append(num+outliers)
-                    labels.append(pid)
+                    pids.append(pid)
                     outliers += 1
             return torch.Tensor(labels).long(), torch.Tensor(pids).long()
 
